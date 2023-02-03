@@ -1,11 +1,12 @@
 const router = require("express").Router();
-const { Thought, Response, User } = require("../../models");
+const { Thought, User } = require("../../models");
 
 router.get("/", async (req, res) => {
   try {
     const thoughts = await Thought.find();
     res.status(200).json(thoughts);
   } catch (err) {
+    console.error(err);
     res.status(500).json(err);
   }
 });
@@ -25,37 +26,37 @@ router.get("/:id", async (req, res) => {
 
 router.post("/:id/reactions", async (req, res) => {
   try {
-    const response = await Response.create(req.body);
     const thought = await Thought.findOneAndUpdate(
       { _id: req.params.id },
-      { $push: { responses: response } },
+      {
+        $push: {
+          reactions: {
+            reactionBody: req.body.reactionBody,
+            username: req.body.username,
+          },
+        },
+      },
       { new: true }
     );
     if (!thought) {
       res.status(404).json({ message: "No thought with this id." });
       return;
     }
-    const thoughtResponse = await Thought.res.status(200).json(thought);
+    res.status(200).json(thought);
   } catch (err) {
+    console.log(err);
     res.status(500).json(err);
   }
 });
 
-router.delete("/:id/reactions", async (req, res) => {
+router.delete("/:id/reactions/:reactionID", async (req, res) => {
   try {
-    const response = await Response.findOneAndDelete({
-      reactionId: req.body.reactionId,
-    });
-    if (!response) {
-      res.status(404).json({ message: "No response with that id was found." });
-      return;
-    }
     const thought = await Thought.findOneAndUpdate(
       { _id: req.params.id },
-      { $pull: { responses: response } },
+      { $pull: { reactions: { reactionId: req.params.reactionID } } },
       { new: true }
     );
-    res.status(200).json({ message: "Response deleted." });
+    res.status(200).json({ message: "Reaction deleted." });
   } catch (err) {
     res.status(500).json(err);
   }
@@ -104,7 +105,7 @@ router.delete("/:id", async (req, res) => {
     }
     const userThought = await User.findOneAndUpdate(
       { _id: req.body.userId },
-      { $pull: { thoughts: thought } },
+      { $pull: { thoughts: req.params.id } },
       { new: true }
     );
     res.status(200).json({ message: "Thought deleted." });

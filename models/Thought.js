@@ -1,5 +1,6 @@
 const { Schema, model } = require("mongoose");
 const reactionSchema = require("./Reaction.js");
+const dateFormater = require("../utils/dateFormater.js");
 
 const thoughtSchema = new Schema(
   {
@@ -10,9 +11,10 @@ const thoughtSchema = new Schema(
       maxlength: 280,
     },
     createdAt: {
-      type: String,
+      type: Date,
       required: true,
       default: Date.now,
+      get: (timestamp) => dateFormater(timestamp),
     },
     username: {
       type: String,
@@ -28,8 +30,8 @@ const thoughtSchema = new Schema(
   }
 );
 
-thoughtSchema.virtual("responsesCount").get(function () {
-  return this.responses.length;
+thoughtSchema.virtual("reactionsCount").get(function () {
+  return this.reactions.length;
 });
 
 const Thought = model("Thought", thoughtSchema);

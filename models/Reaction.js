@@ -1,5 +1,6 @@
-const { ObjectId } = require("mongodb");
-const { Schema, model } = require("mongoose");
+const { ObjectId, Timestamp } = require("mongodb");
+const { Schema, model, Types } = require("mongoose");
+const dateFormater = require("../utils/dateFormater.js");
 
 const reactionSchema = new Schema(
   {
@@ -18,9 +19,10 @@ const reactionSchema = new Schema(
       required: true,
     },
     createdAt: {
-      type: String,
+      type: Date,
       required: true,
       default: Date.now,
+      get: (timestamp) => dateFormater(timestamp),
     },
   },
   {

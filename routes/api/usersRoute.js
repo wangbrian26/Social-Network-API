@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { User } = require("../../models");
+const { User, Thought } = require("../../models");
 
 router.get("/", async (req, res) => {
   try {
@@ -56,7 +56,7 @@ router.delete("/:id", async (req, res) => {
       res.status(404).json({ message: "No user with this ID was found." });
       return;
     }
-    const thoughts = await Thoughts.delete({ username: req.body.username });
+    const thoughts = await Thought.delete({ username: req.body.username });
     res.status(200).json({ message: "User and thoughts deleted." });
   } catch (err) {
     res.status(500).json(err);
