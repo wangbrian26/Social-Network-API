@@ -51,12 +51,13 @@ router.put("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
+    const userInfo = await User.findById(req.params.id);
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) {
       res.status(404).json({ message: "No user with this ID was found." });
       return;
     }
-    const thoughts = await Thought.delete({ username: req.body.username });
+    const thoughts = await Thought.deleteMany({ username: userInfo.username });
     res.status(200).json({ message: "User and thoughts deleted." });
   } catch (err) {
     res.status(500).json(err);
@@ -74,6 +75,15 @@ router.post("/:userId/friends/:friendId", async (req, res) => {
       res.status(404).json({ message: "No user with this ID was found." });
       return;
     }
+    const friend = await User.findByIdAndUpdate(
+      req.params.friendId,
+      { $push: { friends: req.params.userId } },
+      { new: true }
+    );
+    if (!friend) {
+      res.status(404).json({ message: "No user with this ID was found." });
+      return;
+    }
     res.status(200).json({ message: "Friend added!" });
   } catch (err) {
     res.status(500).json(err);
@@ -88,6 +98,15 @@ router.delete("/:userId/friends/:friendId", async (req, res) => {
       { new: true }
     );
     if (!user) {
+      res.status(404).json({ message: "No user with this ID was found." });
+      return;
+    }
+    const friend = await User.findByIdAndUpdate(
+      req.params.friendId,
+      { $pull: { friends: req.params.userId } },
+      { new: true }
+    );
+    if (!friend) {
       res.status(404).json({ message: "No user with this ID was found." });
       return;
     }
